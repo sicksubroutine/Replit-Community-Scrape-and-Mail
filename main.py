@@ -43,7 +43,7 @@ def sendMail(desc,date,link):
   template = template.replace("{date}", date)
   template = template.replace("{desc}", desc)
   template = template.replace("{link}", link)
-  server = "smtp.mailgun.org"
+  server = os.environ.get("SMTP_SERVER")
   port = 587
   s = smtplib.SMTP(host = server, port = port)
   s.starttls()
