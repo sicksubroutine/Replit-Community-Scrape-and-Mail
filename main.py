@@ -1,12 +1,13 @@
 from bs4 import BeautifulSoup
-import os, requests, time, os, smtplib, schedule
+import os, requests, time, smtplib, schedule
 from replit import db
-from email.mime.multipart import MIMEMultipart 
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 # <div class="css-wi7uht">
 # text: <span class="css-19l40in">
 # date: <span class="css-1jm4vlb">
+
 
 def scrape():
   url = "https://replit.com/community-hub"
@@ -31,12 +32,18 @@ def scrape():
           print("Already present, skipping...")
           present = True
       if present == False:
-        db[date] = {"date": date, "description": desc, "link": link, "sent": False}
+        db[date] = {
+          "date": date,
+          "description": desc,
+          "link": link,
+          "sent": False
+        }
         print(f"{desc} added to db")
       else:
         continue
 
-def sendMail(desc,date,link):
+
+def sendMail(desc, date, link):
   template = ""
   with open("email_template.html", "r") as f:
     template = f.read()
@@ -45,7 +52,7 @@ def sendMail(desc,date,link):
   template = template.replace("{link}", link)
   server = os.environ.get("SMTP_SERVER")
   port = 587
-  s = smtplib.SMTP(host = server, port = port)
+  s = smtplib.SMTP(host=server, port=port)
   s.starttls()
   username = os.environ['mailUsername']
   password = os.environ['mailPassword']
@@ -58,6 +65,7 @@ def sendMail(desc,date,link):
   s.send_message(msg)
   del msg
 
+
 def scrape_and_send():
   scrape()
   keys = db.keys()
@@ -65,9 +73,11 @@ def scrape_and_send():
     if db[key]["sent"] == False:
       sendMail(db[key]["description"], db[key]["date"], db[key]["link"])
       db[key]["sent"] = True
-      
+      print("Email Sent")
+
+
 schedule.every().day.at("17:00").do(scrape_and_send)
 
-if __name__ == "__main__":
+while True:
   schedule.run_pending()
-  time.sleep(5)
+  time.sleep(1)
